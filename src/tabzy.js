@@ -28,28 +28,26 @@ function Tabzy(selector) {
 
     if (this.tabs.length !== this.panels.length) return;
 
+    this._originalHtml = this.container.innerHTML;
+
     this._init();
 }
 
 Tabzy.prototype._init = function () {
-    const tabActive = this.tabs[0];
-    tabActive.closest("li").classList.add("tabzy--active");
-
-    this.panels.forEach((panel) => {
-        panel.hidden = true;
-    });
+    this._activeTab(this.tabs[0]);
 
     this.tabs.map((tab) => {
         tab.onclick = (e) => this._handleTabClick(e, tab);
     });
-
-    const panelActive = this.panels[0];
-    panelActive.hidden = false;
 };
 
 Tabzy.prototype._handleTabClick = function (e, tab) {
     e.preventDefault();
 
+    this._activeTab(tab);
+};
+
+Tabzy.prototype._activeTab = function (tab) {
     this.tabs.forEach((tab) => {
         tab.closest("li").classList.remove("tabzy--active");
     });
@@ -60,4 +58,37 @@ Tabzy.prototype._handleTabClick = function (e, tab) {
     });
     const panelActive = document.querySelector(tab.getAttribute("href"));
     panelActive.hidden = false;
+};
+
+Tabzy.prototype.switch = function (input) {
+    let tabToActive = null;
+
+    if (typeof input === "string") {
+        tabToActive = this.tabs.find(
+            (tab) => tab.getAttribute("href") === input
+        );
+        if (!tabToActive) {
+            console.error(`Tabzy: No panel found with ID '${input}'`);
+            return;
+        }
+    } else if (this.tabs.includes(input)) {
+        tabToActive = input;
+    }
+
+    if (!tabToActive) {
+        console.error(`Tabzy: Invalid input '${input}'`);
+        return;
+    }
+
+    this._activeTab(tabToActive);
+};
+
+Tabzy.prototype.desctroy = function () {
+    this.container.innerHTML = this._originalHtml;
+    this.panels.forEach((panel) => {
+        panel.hidden = false;
+    });
+    this.container = null;
+    this.tabs = null;
+    this.panels = null;
 };
